@@ -6,8 +6,35 @@
 </head>
 <body>
 
-	<script>
+	<input type="text" id="simple-console">
 
+	<script>
+		var demoConsole = new Console({
+			selector: '#simple-console'
+		},[
+			{
+				name: 'add',
+//				shortcut: '+',
+				hint: 'node name',
+				listener: function(){
+					console.log( 'add' );
+				}
+			},{
+				name: 'delete',
+				shortcut: 'del',
+				hint: 'node name',
+				listener: function(){
+					console.log( 'del' );
+				}
+			},{
+				name: 'search',
+				shortcut: 's',
+				hint: 'node name',
+				listener: function(){
+					console.log( 'search' );
+				}
+			}
+		]);
 	</script>
 </body>
 </html>
