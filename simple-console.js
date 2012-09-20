@@ -6,6 +6,14 @@
  */
 
 (function( scoupe ){
+
+	/**
+	 * Console constructor-function
+	 *
+	 * @param config is object with basic configs
+	 * @param commandsArray is array of commands (objects)
+	 * @constructor
+	 */
 	scoupe.Console = function Console( config, commandsArray ){
 		var input = document.querySelector( config.selector );
 		this.commands = commandsArray;
