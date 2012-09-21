@@ -3,10 +3,48 @@
 <head>
 	<title>Simple console using</title>
 	<script src="simple-console.js"></script>
+	<style>
+		#console-wrapper {
+			width: 50%;
+			margin: 0 auto;
+			}
+		#simple-console {
+			width: 100%;
+			box-sizing: border-box;
+			border: none;
+			box-shadow: 0 0 5px silver;
+			margin: 0;
+			padding: 5px;
+			font-family: 'Calibri';
+			}
+		#simple-popup {
+			border-left: 1px solid silver;
+			border-right: 1px solid silver;
+			border-bottom: 1px solid silver;
+			box-shadow: 0 1px 5px silver;
+			border-bottom-left-radius: 5px;
+			border-bottom-right-radius: 5px;
+			padding: 0 0 5px 0;
+			font-family: 'Calibri';
+			}
+		#simple-popup .choice {
+			padding: 5px;
+			cursor: pointer;
+			}
+		#simple-popup .choice:nth-child(even) {
+			background: #f1f1f1;
+			}
+		#simple-popup .choice:hover {
+			background: red;
+			color: white;
+			}
+	</style>
 </head>
 <body>
 
-	<input type="text" id="simple-console">
+	<div id="console-wrapper">
+		<input type="text" id="simple-console">
+	</div>
 
 	<script>
 		var demoConsole = new Console({
