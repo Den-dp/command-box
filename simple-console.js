@@ -31,21 +31,66 @@
 	 * Console constructor-function
 	 *
 	 * @param config is object with basic configs
-	 * @param commandsArray is array of commands (objects)
+	 * @param commands is array of commands (objects)
 	 * @constructor
 	 */
-	scoupe.Console = function Console( config, commandsArray ){
-		var input = document.querySelector( config.selector );
-		this.commands = commandsArray;
-		var self = this;
+	scoupe.Console = function Console( config, commands ){
+		var input = document.querySelector( config.inputSelector ),
+			popup = document.querySelector( config.popupSelector ) ||
+			(function(){
+				var element = document.createElement( 'div' ),
+					// . or #
+					selectorType = config.popupSelector[0],
+					// part of string after . or #
+					selector = config.popupSelector.substr(1);
 
-		input.addEventListener( 'input', function(){
-			var results = grep( self.commands, function( _, obj ){
-				if( obj.name.toLowerCase().indexOf( input.value.toLowerCase() ) != -1 ){
+				if( selectorType === '#' ) {
+					element.id = selector;
+				} else {
+					element.className = selector;
+				}
+				return input.parentNode.insertBefore( element, input.nextSibling );
+			})();
+
+		function generateHtmlList( commands ){
+			var htmlList = '';
+			for ( var i in commands ) {
+				htmlList += "<div class='choice'>"+commands[i].name+"</div>";
+			}
+			return htmlList;
+		}
+
+		function repaintPopup( results ){
+			popup.innerHTML = generateHtmlList( results );
+		}
+
+		function fuzzySearchInCommands( query ){
+			return grep( commands, function( _, obj ){
+				if( obj.name.toLowerCase().indexOf( query.toLowerCase() ) != -1 ){
 					return obj;
+				} else {
+					return null;
 				}
 			});
-			console.log( results );
+		}
+
+		input.addEventListener( 'focus', function(){
+			var query = input.value;
+			if( query.length > 0 ) {
+				repaintPopup( fuzzySearchInCommands( query ) );
+			}
+		});
+
+		input.addEventListener( 'input', function(){
+			repaintPopup( fuzzySearchInCommands( input.value ) );
+		});
+
+		/**
+		 * Fired when input loses focus
+		 * Redraws popup by empty list
+		 */
+		input.addEventListener( 'blur', function(){
+			repaintPopup( );
 		});
 		
 	}
