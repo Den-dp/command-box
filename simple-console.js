@@ -49,6 +49,7 @@
 				} else {
 					element.className = selector;
 				}
+				element.style.display = 'none';
 				return input.parentNode.insertBefore( element, input.nextSibling );
 			})();
 
@@ -61,7 +62,12 @@
 		}
 
 		function repaintPopup( results ){
-			popup.innerHTML = generateHtmlList( results );
+			if( !!results ){
+				popup.style.display = 'block';
+				popup.innerHTML = generateHtmlList( results );
+			} else {
+				popup.style.display = 'none';
+			}
 		}
 
 		function fuzzySearchInCommands( query ){
