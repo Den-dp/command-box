@@ -62,7 +62,7 @@
 		}
 
 		function repaintPopup( results ){
-			if( !!results ){
+			if( !!results && results.length != 0 ){
 				popup.style.display = 'block';
 				popup.innerHTML = generateHtmlList( results );
 			} else {
