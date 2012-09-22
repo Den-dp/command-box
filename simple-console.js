@@ -35,13 +35,14 @@
 	 * @constructor
 	 */
 	scoupe.Console = function Console( config, commands ){
-		var input = document.querySelector( config.inputSelector ),
-			popupItemTemplate = config.popupItemTemplate || "{{name}} {{description}}",
+		var popupItemTemplate = config.popupItemTemplate || "{{name}} {{description}}",
+			i = 0,
+			input = document.querySelector( config.inputSelector ),
 			popup = document.querySelector( config.popupSelector ) ||
 			(function(){
 				var element = document.createElement( 'ul' ),
 					// . or #
-					selectorType = config.popupSelector[0],
+					selectorType = config.popupSelector.charAt(0),
 					// part of string after . or #
 					selector = config.popupSelector.substr(1);
 
@@ -101,7 +102,35 @@
 		input.addEventListener( 'blur', function(){
 			repaintPopup( );
 		});
-		
+
+		input.addEventListener( 'keydown', function ( key ){
+			if( key.keyIdentifier === 'Up' || key.keyIdentifier === 'Down' || key.keyIdentifier === 'Enter' ){
+
+				var items = popup.querySelectorAll('.choice' ),
+					selectedItem = popup.querySelector('.choice.selected' );
+
+				if ( !!selectedItem ){
+					selectedItem.classList.remove( 'selected' );
+				}
+
+				if( !!items && items.length > 0 ) {
+					switch ( key.keyIdentifier ) {
+						case 'Up':
+							i--;
+							if( i < 0 ) i = items.length-1;
+							break;
+						case 'Down':
+							i++;
+							if( i >= items.length ) i = 0;
+							break;
+						case 'Enter':
+							input.value = commands[i].name;
+							break;
+					}
+					items[i].classList.add( 'selected' );
+				}
+			}
+		});
 	}
 
 })( this );
