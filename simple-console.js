@@ -36,9 +36,10 @@
 	 */
 	scoupe.Console = function Console( config, commands ){
 		var input = document.querySelector( config.inputSelector ),
+			popupItemTemplate = config.popupItemTemplate || "{{name}} {{description}}",
 			popup = document.querySelector( config.popupSelector ) ||
 			(function(){
-				var element = document.createElement( 'div' ),
+				var element = document.createElement( 'ul' ),
 					// . or #
 					selectorType = config.popupSelector[0],
 					// part of string after . or #
@@ -56,7 +57,9 @@
 		function generateHtmlList( commands ){
 			var htmlList = '';
 			for ( var i in commands ) {
-				htmlList += "<div class='choice'>"+commands[i].name+"</div>";
+				htmlList += "<li class='choice'>" + popupItemTemplate.replace( /{{(\w+)}}/gi, function(_, propertyName){
+					return commands[i][propertyName];
+				}) + "</li>";
 			}
 			return htmlList;
 		}

@@ -4,71 +4,82 @@
 	<title>Simple console using</title>
 	<script src="simple-console.js"></script>
 	<style>
-		#console-wrapper {
+		.console-wrapper {
 			width: 50%;
 			margin: 0 auto;
 			}
-		#simple-console {
+		.console-wrapper > * {
+			font-family: 'Calibri';
+			}
+		.simple-console {
 			width: 100%;
 			box-sizing: border-box;
 			border: none;
 			box-shadow: 0 0 5px silver;
 			margin: 0;
 			padding: 5px;
-			font-family: 'Calibri';
 			}
-		#simple-popup {
+		.simple-popup {
+			padding: 0 0 5px 0;
+			margin: 0;
 			border-left: 1px solid silver;
 			border-right: 1px solid silver;
 			border-bottom: 1px solid silver;
 			box-shadow: 0 1px 5px silver;
 			border-bottom-left-radius: 5px;
 			border-bottom-right-radius: 5px;
-			padding: 0 0 5px 0;
-			font-family: 'Calibri';
 			}
-		#simple-popup .choice {
+		.simple-popup .choice {
 			padding: 5px;
+			list-style: none;
 			cursor: pointer;
 			}
-		#simple-popup .choice:nth-child(even) {
-			background: #f1f1f1;
-			}
-		#simple-popup .choice:hover {
-			background: red;
-			color: white;
-			}
+			.simple-popup .choice:nth-child(even) {
+				background: #f1f1f1;
+				}
+			.simple-popup .choice:hover {
+					background: red;
+					color: white;
+				}
+				.simple-popup .choice .name{
+					font-weight: bold;
+					}
+				.simple-popup .choice .description{
+					font-style: oblique;
+					margin-left: 1em;
+					}
 	</style>
 </head>
 <body>
 
-	<div id="console-wrapper">
-		<input type="text" id="simple-console">
+	<div class="console-wrapper">
+		<input type="text" class="simple-console">
 	</div>
 
 	<script>
 		var demoConsole = new Console({
-			inputSelector: '#simple-console',
-			popupSelector: '#simple-popup'
+			inputSelector: '.simple-console',
+			popupSelector: '.simple-popup',
+			popupItemTemplate: "<span class='name'>{{name}}</span><span class='description'>{{description}}</span>"
 		},[
 			{
 				name: 'add',
 //				shortcut: '+',
-				hint: 'node name',
+				description: 'node name to add',
 				listener: function(){
 					console.log( 'add' );
 				}
 			},{
 				name: 'delete',
 				shortcut: 'del',
-				hint: 'node name',
+				description: 'node name to delete',
 				listener: function(){
 					console.log( 'del' );
 				}
 			},{
 				name: 'search',
 				shortcut: 's',
-				hint: 'node name',
+				description: 'node name to search',
 				listener: function(){
 					console.log( 'search' );
 				}
