@@ -84,15 +84,48 @@
 			});
 		}
 
+		/**
+		 * Returns typed word
+		 * @return {String}
+		 */
+		function getWordUnderCursor(){
+			var cursorPosition = input.selectionStart,
+				text = input.value,
+				start = 0,
+				stop = 0,
+				res = '';
+			if( text.length > 0 ) {
+				for( var i = cursorPosition; i <= text.length && text[i] !== ' '; i++ ) {
+					stop = i;
+				}
+				for( var j = cursorPosition; j >= 0  && text[j] !== ' '; j-- ) {
+					start = j;
+				}
+				res = text.slice( start, stop );
+			} else {
+				res = '';
+			}
+			console.log( start,stop,res );
+			return res;
+		}
+
+		/**
+		 * Fired when input in focus
+		 * Draw popup, when input has some keywords
+		 */
 		input.addEventListener( 'focus', function(){
-			var query = input.value;
+			var query = getWordUnderCursor();
 			if( query.length > 0 ) {
 				repaintPopup( fuzzySearchInCommands( query ) );
 			}
 		});
 
+		/**
+		 * Fired when typing characters in input
+		 * Redraws popup with fuzzy searhed list
+		 */
 		input.addEventListener( 'input', function(){
-			repaintPopup( fuzzySearchInCommands( input.value ) );
+			repaintPopup( fuzzySearchInCommands( getWordUnderCursor() ) );
 		});
 
 		/**
@@ -103,6 +136,11 @@
 			repaintPopup( );
 		});
 
+		/**
+		 * Fired, when key pressed in input
+		 * Used for UP and DOWN navigation and inserting selected
+		 * command from navigation meny by pressing ENTER
+		 */
 		input.addEventListener( 'keydown', function ( key ){
 			if( key.keyIdentifier === 'Up' || key.keyIdentifier === 'Down' || key.keyIdentifier === 'Enter' ){
 
