@@ -131,6 +131,26 @@
 				}
 			}
 		});
+
+		this.addCommand = function( command ){
+			if( command instanceof Array ){
+				for( var i in command ){
+					commands.push( command[i] );
+				}
+			} else {
+				commands.push( command );
+			}
+		};
+
+		this.removeCommand = function( command ){
+			var commandName = command instanceof Object? command.name : command;
+			for( var i in commands ) {
+				if( commands[i].name === commandName ) {
+					commands.splice(i,1);
+					return;
+				}
+			}
+		}
 	}
 
 })( this );

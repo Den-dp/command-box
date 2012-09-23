@@ -89,6 +89,22 @@
 				}
 			}
 		]);
+
+		var argsArray = [{
+			name: 'a',
+			description:'this is a'
+		},{
+			name: 'b',
+			description:'this is b'
+		}];
+
+		demoConsole.addCommand(argsArray);
+		demoConsole.addCommand({
+			name: 'c',
+			description: 'this is c'
+		});
+		demoConsole.removeCommand( 'c' );
+		demoConsole.removeCommand( 'b' );
 	</script>
 </body>
 </html>
