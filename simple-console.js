@@ -36,7 +36,6 @@
 	 */
 	scoupe.Console = function Console( config, commands ){
 		var popupItemTemplate = config.popupItemTemplate || "{{name}} {{description}}",
-			i = 0,
 			input = document.querySelector( config.inputSelector ),
 			popup = document.querySelector( config.popupSelector ) ||
 			(function(){
@@ -58,7 +57,7 @@
 		function generateHtmlList( commands ){
 			var htmlList = '';
 			for ( var i in commands ) {
-				htmlList += "<li class='choice'>" + popupItemTemplate.replace( /{{(\w+)}}/gi, function(_, propertyName){
+				htmlList += "<li class='choice' command='"+commands[i].name+"'>" + popupItemTemplate.replace( /{{(\w+)}}/gi, function(_, propertyName){
 					return commands[i][propertyName];
 				}) + "</li>";
 			}
@@ -95,11 +94,11 @@
 				stop = 0,
 				res = '';
 			if( text.length > 0 ) {
-				for( var i = cursorPosition; i <= text.length && text[i] !== ' '; i++ ) {
-					stop = i;
+				for( var i = cursorPosition; i >= 0  && text[i] !== ' '; i-- ) {
+					start = i;
 				}
-				for( var j = cursorPosition; j >= 0  && text[j] !== ' '; j-- ) {
-					start = j;
+				for( var j = cursorPosition; j <= text.length && text[j] !== ' '; j++ ) {
+					stop = j;
 				}
 				res = text.slice( start, stop );
 			} else {
@@ -125,7 +124,7 @@
 		 * Redraws popup with fuzzy searhed list
 		 */
 		input.addEventListener( 'input', function(){
-			repaintPopup( fuzzySearchInCommands( getWordUnderCursor() ) );
+			repaintPopup( fuzzySearchInCommands( getWordUnderCursor() || ' ' ) );
 		});
 
 		/**
@@ -147,25 +146,28 @@
 				var items = popup.querySelectorAll('.choice' ),
 					selectedItem = popup.querySelector('.choice.selected' );
 
-				if ( !!selectedItem ){
-					selectedItem.classList.remove( 'selected' );
-				}
-
 				if( !!items && items.length > 0 ) {
-					switch ( key.keyIdentifier ) {
-						case 'Up':
-							i--;
-							if( i < 0 ) i = items.length-1;
-							break;
-						case 'Down':
-							i++;
-							if( i >= items.length ) i = 0;
-							break;
-						case 'Enter':
-							input.value = commands[i].name;
-							break;
+
+					if( !!selectedItem ) {
+						if( key.keyIdentifier === 'Up' ) {
+							selectedItem.classList.remove( 'selected' );
+							if( !!selectedItem.previousSibling ){
+								selectedItem = selectedItem.previousSibling;}
+
+						} else if( key.keyIdentifier === 'Down' ) {
+							selectedItem.classList.remove( 'selected' );
+							if( !!selectedItem.nextSibling )
+								selectedItem = selectedItem.nextSibling;
+						}
+						selectedItem.classList.add( 'selected' );
+					} else {
+						selectedItem = items[0];
+						selectedItem.classList.add( 'selected' );
+
 					}
-					items[i].classList.add( 'selected' );
+					if( key.keyIdentifier === 'Enter' ) {
+						input.value = selectedItem.getAttribute('command');
+					}
 				}
 			}
 		});
