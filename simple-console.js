@@ -83,29 +83,95 @@
 			});
 		}
 
+		var prevLength = 0,
+			prevPosition = 0;
+		function getWordBounds(){
+			console.group('getWordBounds()');
+			var cursorPosition = input.selectionStart,
+				prevPosition = cursorPosition,
+				text = input.value,
+				start = 0,
+				stop = 0,
+				res = '';
+
+			// There are some problems to detect the symbol under cursor if we pressed BACKSPACE or DELETE:
+			// undefined value or not actual cursor position
+			// To handle BACKSPACE pressing we should expect next situations:
+			// - symbol under cursorPosition is undefined
+			// - symbol under cursorPosition is character, but length of all string is increased
+			// and then we should try to get previous symbol
+			// but catch the situation if str length is smaller and no prev symbol available
+
+			if( text[cursorPosition] === undefined ||
+				( cursorPosition < input.value.length &&
+					(prevLength > input.value.length && text[cursorPosition] === ' ' ) ) ) {
+
+				if( cursorPosition - 1 >= 0 ) {
+						cursorPosition--;
+				} else {
+						console.log( 'I see the first character in the string has no yet typed (or probably it was deleted)' );
+				}
+			// if str became longer
+			// then we should catch the situation, when we insert spaces before word
+			// or not?…
+			} else if( cursorPosition < input.value.length && text[cursorPosition+1] !== undefined && prevLength < input.value.length && text[cursorPosition] === ' ' ) {
+				cursorPosition++;
+			} else {
+				console.log( 'Default situation like typing characters' );
+			}
+			prevLength = input.value.length;
+
+			// so, after preparations above we have 100% index of character under cursor
+			// and now we have to try to detect left and right 'bounds' of this character
+			// In best situation it would be the word otherwise it would be space character
+			console.log( ">> %d %d '%s' '%s'", input.selectionStart, cursorPosition, text[input.selectionStart], text[cursorPosition] );
+
+			start = stop = cursorPosition;
+			for( var i = cursorPosition; i >= 0  && text[i] !== ' '; i-- ) {
+				start = i;
+			}
+			console.group('last symbol loop')
+			for( var j = cursorPosition; j < text.length && text[j] !== ' '; j++ ) {
+				stop = j;
+				console.log( 'stop :"%s"',text[stop] );
+			}
+			if( text.length > stop ) {
+				stop++;
+			}
+			console.groupEnd();
+
+			console.log( '%d %d : "%s"', start, stop, text.slice( start, stop ) );
+			console.groupEnd();
+			return {
+				start: start,
+				stop: stop
+			};
+		}
+
 		/**
 		 * Returns typed word
 		 * @return {String}
 		 */
 		function getWordUnderCursor(){
-			var cursorPosition = input.selectionStart,
-				text = input.value,
-				start = 0,
-				stop = 0,
+			var wordBounds = getWordBounds();
+			var text = input.value,
 				res = '';
 			if( text.length > 0 ) {
-				for( var i = cursorPosition; i >= 0  && text[i] !== ' '; i-- ) {
-					start = i;
-				}
-				for( var j = cursorPosition; j <= text.length && text[j] !== ' '; j++ ) {
-					stop = j;
-				}
-				res = text.slice( start, stop );
+				res = text.slice( wordBounds.start, wordBounds.stop );
 			} else {
 				res = '';
 			}
-			console.log( start,stop,res );
+			console.log( "'%s'",res );
 			return res;
+		}
+
+		function setWordUnderCursor( word ){
+			var wordBounds = getWordBounds(),
+				text = input.value,
+				left = text.substr(0,wordBounds.start ),
+				right = text.substr(wordBounds.stop);
+			text = left + word + right;
+			input.value = text;
 		}
 
 		/**
@@ -124,7 +190,7 @@
 		 * Redraws popup with fuzzy searhed list
 		 */
 		input.addEventListener( 'input', function(){
-			repaintPopup( fuzzySearchInCommands( getWordUnderCursor() || ' ' ) );
+			repaintPopup( fuzzySearchInCommands( getWordUnderCursor() ) );
 		});
 
 		/**
@@ -166,7 +232,7 @@
 
 					}
 					if( key.keyIdentifier === 'Enter' ) {
-						input.value = selectedItem.getAttribute('command');
+						setWordUnderCursor( selectedItem.getAttribute('command') );
 					}
 				}
 			}
