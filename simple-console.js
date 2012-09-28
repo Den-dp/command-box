@@ -42,8 +42,8 @@
 			console.group('getWordBounds()');
 			var cursorPosition = input.selectionStart,
 				text = input.value,
-				start = 0,
-				stop = 0;
+				begin = 0,
+				end = 0;
 
 			// There are some problems to detect the symbol under cursor if we pressed BACKSPACE or DELETE:
 			// undefined value or not actual cursor position
@@ -77,25 +77,25 @@
 			// In best situation it would be the word otherwise it would be space character
 			console.log( ">> %d %d '%s' '%s'", input.selectionStart, cursorPosition, text[input.selectionStart], text[cursorPosition] );
 
-			start = stop = cursorPosition;
+			begin = end = cursorPosition;
 			for( var i = cursorPosition; i >= 0  && text[i] !== ' '; i-- ) {
-				start = i;
+				begin = i;
 			}
 			console.group('last symbol loop')
 			for( var j = cursorPosition; j < text.length && text[j] !== ' '; j++ ) {
-				stop = j;
-				console.log( 'stop :"%s"',text[stop] );
+				end = j;
+				console.log( 'end :"%s"',text[end] );
 			}
-			if( text.length > stop ) {
-				stop++;
+			if( text.length > end ) {
+				end++;
 			}
 			console.groupEnd();
 
-			console.log( '%d %d : "%s"', start, stop, text.slice( start, stop ) );
+			console.log( '%d %d : "%s"', begin, end, text.slice( begin, end ) );
 			console.groupEnd();
 			return {
-				start: start,
-				stop: stop
+				begin: begin,
+				end: end
 			};
 		};
 
@@ -104,11 +104,11 @@
 		 * @return {String}
 		 */
 		this.getWordUnderCursor = function (){
-			var wordBounds = this.getWordBounds();
-			var text = input.value,
+			var wordBounds = this.getWordBounds(),
+				text = input.value,
 				res = '';
 			if( text.length > 0 ) {
-				res = text.slice( wordBounds.start, wordBounds.stop );
+				res = text.slice( wordBounds.begin, wordBounds.end );
 			} else {
 				res = '';
 			}
@@ -119,8 +119,8 @@
 		this.setWordUnderCursor = function ( word ){
 			var wordBounds = this.getWordBounds(),
 				text = input.value,
-				left = text.substr(0,wordBounds.start ),
-				right = text.substr(wordBounds.stop);
+				left = text.substr( 0, wordBounds.begin ),
+				right = text.substr( wordBounds.end );
 			text = left + word + right;
 			input.value = text;
 		}
