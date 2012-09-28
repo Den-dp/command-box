@@ -81,7 +81,7 @@
 			for( var i = cursorPosition; i >= 0  && text[i] !== ' '; i-- ) {
 				begin = i;
 			}
-			console.group('last symbol loop')
+			console.group('last symbol loop');
 			for( var j = cursorPosition; j < text.length && text[j] !== ' '; j++ ) {
 				end = j;
 				console.log( 'end :"%s"',text[end] );
@@ -123,7 +123,83 @@
 				right = text.substr( wordBounds.end );
 			text = left + word + right;
 			input.value = text;
+		};
+	};
+
+	/**
+	 * DropDownMenu function-constructor
+	 *
+	 * @param config
+	 * @constructor
+	 */
+	var DropDownMenu = function( config ){
+		var dropDownMenuItemTemplate = config.dropDownMenuItemTemplate || "{{name}} {{description}}",
+			dropDownMenu = config.dropDownMenuSelector;
+
+		function generateHtmlList( commands ){
+			var htmlList = '';
+			for ( var i in commands ) {
+				htmlList += "<li class='choice' command='"+commands[i].name+"'>" + dropDownMenuItemTemplate.replace( /\{\{(\w+)\}\}/gi, function(_, propertyName){
+					return commands[i][propertyName];
+				}) + "</li>";
+			}
+			return htmlList;
 		}
+
+		this.update = function( results ){
+			if( !!results && results.length !== 0 ){
+				dropDownMenu.style.display = 'block';
+				dropDownMenu.innerHTML = generateHtmlList( results );
+			} else {
+				dropDownMenu.style.display = 'none';
+			}
+		};
+
+		this.selectPrevItem = function() {
+			var items = dropDownMenu.querySelectorAll( '.choice' ),
+				selectedItem = dropDownMenu.querySelector( '.choice.selected' );
+
+			if( !!items && items.length > 0 ) {
+				if( !!selectedItem ) {
+					selectedItem.classList.remove( 'selected' );
+					if( !!selectedItem.previousSibling ){
+						selectedItem = selectedItem.previousSibling;
+					}
+					selectedItem.classList.add( 'selected' );
+				} else {
+					selectedItem = items[0];
+					selectedItem.classList.add( 'selected' );
+				}
+			}
+		};
+
+		this.selectNextItem = function() {
+			var items = dropDownMenu.querySelectorAll( '.choice' ),
+				selectedItem = dropDownMenu.querySelector( '.choice.selected' );
+
+			if( !!items && items.length > 0 ) {
+				if( !!selectedItem ) {
+					selectedItem.classList.remove( 'selected' );
+					if( !!selectedItem.nextSibling ) {
+						selectedItem = selectedItem.nextSibling;
+					}
+					selectedItem.classList.add( 'selected' );
+				} else {
+					selectedItem = items[0];
+					selectedItem.classList.add( 'selected' );
+				}
+			}
+		};
+
+		this.getSelectedItem = function() {
+			var items = dropDownMenu.querySelectorAll( '.choice' ),
+				selectedItem = dropDownMenu.querySelector( '.choice.selected' );
+
+			if( !!items && items.length > 0 ) {
+				return selectedItem.getAttribute( 'command' );
+			}
+		};
+
 	};
 
 	/**
@@ -133,17 +209,17 @@
 	 * @param commands is array of commands (objects)
 	 * @constructor
 	 */
-	scoupe.Console = function Console( config, commands ){
-		var popupItemTemplate = config.popupItemTemplate || "{{name}} {{description}}",
-			input = document.querySelector( config.inputSelector ),
+	scoupe.CommandBox = function( config, commands ){
+		var input = document.querySelector( config.inputSelector ),
 			inputManager = new InputManager( input ),
-			popup = document.querySelector( config.popupSelector ) ||
+			// _ is the way to extend config in the same place
+			_ = config.dropDownMenuSelector = document.querySelector( config.dropDownMenuSelector ) ||
 			(function(){
 				var element = document.createElement( 'ul' ),
-					// . or #
-					selectorType = config.popupSelector.charAt(0),
-					// part of string after . or #
-					selector = config.popupSelector.substr(1);
+				// . or #
+					selectorType = config.dropDownMenuSelector.charAt(0),
+				// part of string after . or #
+					selector = config.dropDownMenuSelector.substr(1);
 
 				if( selectorType === '#' ) {
 					element.id = selector;
@@ -152,26 +228,8 @@
 				}
 				element.style.display = 'none';
 				return input.parentNode.insertBefore( element, input.nextSibling );
-			})();
-
-		function generateHtmlList( commands ){
-			var htmlList = '';
-			for ( var i in commands ) {
-				htmlList += "<li class='choice' command='"+commands[i].name+"'>" + popupItemTemplate.replace( /{{(\w+)}}/gi, function(_, propertyName){
-					return commands[i][propertyName];
-				}) + "</li>";
-			}
-			return htmlList;
-		}
-
-		function repaintPopup( results ){
-			if( !!results && results.length != 0 ){
-				popup.style.display = 'block';
-				popup.innerHTML = generateHtmlList( results );
-			} else {
-				popup.style.display = 'none';
-			}
-		}
+			})(),
+			dropDownMenu = new DropDownMenu( config );
 
 		function fuzzySearchInCommands( query ){
 			return grep( commands, function( _, obj ){
@@ -183,33 +241,31 @@
 			});
 		}
 
-
-
 		/**
 		 * Fired when input in focus
-		 * Draw popup, when input has some keywords
+		 * Draw dropDownMenu, when input has some keywords
 		 */
 		input.addEventListener( 'focus', function(){
 			var query = inputManager.getWordUnderCursor();
 			if( query.length > 0 ) {
-				repaintPopup( fuzzySearchInCommands( query ) );
+				dropDownMenu.update( fuzzySearchInCommands( query ) );
 			}
 		});
 
 		/**
 		 * Fired when typing characters in input
-		 * Redraws popup with fuzzy searhed list
+		 * Redraws dropDownMenu with fuzzy searhed list
 		 */
 		input.addEventListener( 'input', function(){
-			repaintPopup( fuzzySearchInCommands( inputManager.getWordUnderCursor() ) );
+			dropDownMenu.update( fuzzySearchInCommands( inputManager.getWordUnderCursor() ) );
 		});
 
 		/**
 		 * Fired when input loses focus
-		 * Redraws popup by empty list
+		 * Redraws dropDownMenu by empty list
 		 */
 		input.addEventListener( 'blur', function(){
-			repaintPopup( );
+			dropDownMenu.update( );
 		});
 
 		/**
@@ -218,34 +274,12 @@
 		 * command from navigation meny by pressing ENTER
 		 */
 		input.addEventListener( 'keydown', function ( key ){
-			if( key.keyIdentifier === 'Up' || key.keyIdentifier === 'Down' || key.keyIdentifier === 'Enter' ){
-
-				var items = popup.querySelectorAll('.choice' ),
-					selectedItem = popup.querySelector('.choice.selected' );
-
-				if( !!items && items.length > 0 ) {
-
-					if( !!selectedItem ) {
-						if( key.keyIdentifier === 'Up' ) {
-							selectedItem.classList.remove( 'selected' );
-							if( !!selectedItem.previousSibling ){
-								selectedItem = selectedItem.previousSibling;}
-
-						} else if( key.keyIdentifier === 'Down' ) {
-							selectedItem.classList.remove( 'selected' );
-							if( !!selectedItem.nextSibling )
-								selectedItem = selectedItem.nextSibling;
-						}
-						selectedItem.classList.add( 'selected' );
-					} else {
-						selectedItem = items[0];
-						selectedItem.classList.add( 'selected' );
-
-					}
-					if( key.keyIdentifier === 'Enter' ) {
-						inputManager.setWordUnderCursor( selectedItem.getAttribute('command') );
-					}
-				}
+			if( key.keyIdentifier === 'Up' ) {
+				dropDownMenu.selectPrevItem();
+			} else if( key.keyIdentifier === 'Down' ) {
+				dropDownMenu.selectNextItem();
+			} else if( key.keyIdentifier === 'Enter' ) {
+				inputManager.setWordUnderCursor( dropDownMenu.getSelectedItem() );
 			}
 		});
 
@@ -263,11 +297,11 @@
 			var commandName = command instanceof Object? command.name : command;
 			for( var i in commands ) {
 				if( commands[i].name === commandName ) {
-					commands.splice(i,1);
+					commands.splice( i, 1 );
 					return;
 				}
 			}
-		}
-	}
+		};
+	};
 
 })( this );

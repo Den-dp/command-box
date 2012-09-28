@@ -11,7 +11,7 @@
 		.console-wrapper > * {
 			font-family: 'Calibri';
 			}
-		.simple-console {
+		.simple-command-box {
 			width: 100%;
 			box-sizing: border-box;
 			border: none;
@@ -19,7 +19,7 @@
 			margin: 0;
 			padding: 5px;
 			}
-		.simple-popup {
+		.simple-dropdown-menu {
 			padding: 0 0 5px 0;
 			margin: 0;
 			border-left: 1px solid silver;
@@ -29,26 +29,26 @@
 			border-bottom-left-radius: 5px;
 			border-bottom-right-radius: 5px;
 			}
-		.simple-popup .choice {
+		.simple-dropdown-menu .choice {
 			padding: 5px;
 			list-style: none;
 			cursor: pointer;
 			}
-			.simple-popup .choice:nth-child(even) {
+			.simple-dropdown-menu .choice:nth-child(even) {
 				background: #f1f1f1;
 				}
-			.simple-popup .choice:hover {
+			.simple-dropdown-menu .choice:hover {
 					background: red;
 					color: white;
 				}
-			.simple-popup .choice.selected {
+			.simple-dropdown-menu .choice.selected {
 					background: red;
 					color: white;
 				}
-				.simple-popup .choice .name{
+				.simple-dropdown-menu .choice .name{
 					font-weight: bold;
 					}
-				.simple-popup .choice .description{
+				.simple-dropdown-menu .choice .description{
 					font-style: oblique;
 					margin-left: 1em;
 					}
@@ -57,14 +57,14 @@
 <body>
 
 	<div class="console-wrapper">
-		<input type="text" class="simple-console">
+		<input type="text" class="simple-command-box">
 	</div>
 
 	<script>
-		var demoConsole = new Console({
-			inputSelector: '.simple-console',
-			popupSelector: '.simple-popup',
-			popupItemTemplate: "<span class='name'>{{name}}</span><span class='description'>{{description}}</span>"
+		var demoCommandBox = new CommandBox({
+			inputSelector: '.simple-command-box',
+			dropDownMenuSelector: '.simple-dropdown-menu',
+			dropDownMenuItemTemplate: "<span class='name'>{{name}}</span><span class='description'>{{description}}</span>"
 		},[
 			{
 				name: 'add',
@@ -98,13 +98,13 @@
 			description:'this is b'
 		}];
 
-		demoConsole.addCommand(argsArray);
-		demoConsole.addCommand({
+		demoCommandBox.addCommand(argsArray);
+		demoCommandBox.addCommand({
 			name: 'c',
 			description: 'this is c'
 		});
-		demoConsole.removeCommand( 'c' );
-		demoConsole.removeCommand( 'b' );
+		demoCommandBox.removeCommand( 'c' );
+		demoCommandBox.removeCommand( 'b' );
 	</script>
 </body>
 </html>
