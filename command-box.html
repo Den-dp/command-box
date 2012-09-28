@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Simple console using</title>
+	<script src="command-box.js"></script>
+	<style>
+		.console-wrapper {
+			width: 50%;
+			margin: 0 auto;
+			}
+		.console-wrapper > * {
+			font-family: 'Calibri';
+			}
+		.simple-command-box {
+			width: 100%;
+			box-sizing: border-box;
+			border: none;
+			box-shadow: 0 0 5px silver;
+			margin: 0;
+			padding: 5px;
+			}
+		.simple-dropdown-menu {
+			padding: 0 0 5px 0;
+			margin: 0;
+			border-left: 1px solid silver;
+			border-right: 1px solid silver;
+			border-bottom: 1px solid silver;
+			box-shadow: 0 1px 5px silver;
+			border-bottom-left-radius: 5px;
+			border-bottom-right-radius: 5px;
+			}
+		.simple-dropdown-menu .choice {
+			padding: 5px;
+			list-style: none;
+			cursor: pointer;
+			}
+			.simple-dropdown-menu .choice:nth-child(even) {
+				background: #f1f1f1;
+				}
+			.simple-dropdown-menu .choice:hover {
+					background: red;
+					color: white;
+				}
+			.simple-dropdown-menu .choice.selected {
+					background: red;
+					color: white;
+				}
+				.simple-dropdown-menu .choice .name{
+					font-weight: bold;
+					}
+				.simple-dropdown-menu .choice .description{
+					font-style: oblique;
+					margin-left: 1em;
+					}
+	</style>
+</head>
+<body>
+
+	<div class="console-wrapper">
+		<input type="text" class="simple-command-box">
+	</div>
+
+	<script>
+		var demoCommandBox = new CommandBox({
+			inputSelector: '.simple-command-box',
+			dropDownMenuSelector: '.simple-dropdown-menu',
+			dropDownMenuItemTemplate: "<span class='name'>{{name}}</span><span class='description'>{{description}}</span>"
+		},[
+			{
+				name: 'add',
+//				shortcut: '+',
+				description: 'node name to add',
+				listener: function(){
+					console.log( 'add' );
+				}
+			},{
+				name: 'delete',
+				shortcut: 'del',
+				description: 'node name to delete',
+				listener: function(){
+					console.log( 'del' );
+				}
+			},{
+				name: 'search',
+				shortcut: 's',
+				description: 'node name to search',
+				listener: function(){
+					console.log( 'search' );
+				}
+			}
+		]);
+
+		var argsArray = [{
+			name: 'a',
+			description:'this is a'
+		},{
+			name: 'b',
+			description:'this is b'
+		}];
+
+		demoCommandBox.addCommand(argsArray);
+		demoCommandBox.addCommand({
+			name: 'c',
+			description: 'this is c'
+		});
+		demoCommandBox.removeCommand( 'c' );
+		demoCommandBox.removeCommand( 'b' );
+	</script>
+</body>
+</html>
