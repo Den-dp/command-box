@@ -36,7 +36,9 @@
 	 * @constructor
 	 */
 	var InputManager = function( input ){
-		var prevLength = 0;
+		var prevLength = 0,
+			cachedBegin = 0,
+			cachedEnd = 0;
 
 		this.getWordBounds = function(){
 			console.group('getWordBounds()');
@@ -53,6 +55,10 @@
 			// and then we should try to get previous symbol
 			// but catch the situation if str length is smaller and no prev symbol available
 
+			// true if we
+			// * delete last character of the end of the input value
+			// or
+			// * delete character in the middle of the input value
 			if( text[cursorPosition] === undefined ||
 				( cursorPosition < input.value.length &&
 					(prevLength > input.value.length && text[cursorPosition] === ' ' ) ) ) {
@@ -62,9 +68,9 @@
 				} else {
 					console.log( 'I see the first character in the string has no yet typed (or probably it was deleted)' );
 				}
-				// if str became longer
-				// then we should catch the situation, when we insert spaces before word
-				// or not?…
+			// if str became longer
+			// then we should catch the situation, when we insert spaces before word
+			// or not?…
 			} else if( cursorPosition < input.value.length && text[cursorPosition+1] !== undefined && prevLength < input.value.length && text[cursorPosition] === ' ' ) {
 				cursorPosition++;
 			} else {
@@ -94,8 +100,8 @@
 			console.log( '%d %d : "%s"', begin, end, text.slice( begin, end ) );
 			console.groupEnd();
 			return {
-				begin: begin,
-				end: end
+				begin: cachedBegin = begin,
+				end: cachedEnd = end
 			};
 		};
 
@@ -116,8 +122,16 @@
 			return res;
 		};
 
+		this.getChachedWordBounds = function(){
+			console.log( 'from caaacchhheee:%d %d',cachedBegin, cachedEnd );
+			return {
+				begin: cachedBegin,
+				end: cachedEnd
+			};
+		};
+
 		this.setWordUnderCursor = function ( word ){
-			var wordBounds = this.getWordBounds(),
+			var wordBounds = this.getChachedWordBounds(),
 				text = input.value,
 				left = text.substr( 0, wordBounds.begin ),
 				right = text.substr( wordBounds.end );
@@ -273,12 +287,14 @@
 		 * Used for UP and DOWN navigation and inserting selected
 		 * command from navigation meny by pressing ENTER
 		 */
-		input.addEventListener( 'keydown', function ( key ){
-			if( key.keyIdentifier === 'Up' ) {
+		input.addEventListener( 'keydown', function ( e ){
+			if( e.keyIdentifier === 'Up' ) {
+				e.preventDefault();
 				dropDownMenu.selectPrevItem();
-			} else if( key.keyIdentifier === 'Down' ) {
+			} else if( e.keyIdentifier === 'Down' ) {
+				e.preventDefault();
 				dropDownMenu.selectNextItem();
-			} else if( key.keyIdentifier === 'Enter' ) {
+			} else if( e.keyIdentifier === 'Enter' ) {
 				inputManager.setWordUnderCursor( dropDownMenu.getSelectedItem() );
 			}
 		});
