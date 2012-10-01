@@ -160,12 +160,24 @@
 			return htmlList;
 		}
 
+		this.show = function(){
+			dropDownMenu.style.display = 'block';
+		};
+
+		this.hide = function(){
+			dropDownMenu.style.display = 'none';
+		};
+
+		this.isVisible = function() {
+			return dropDownMenu.style.display === 'block';
+		};
+
 		this.update = function( results ){
 			if( !!results && results.length !== 0 ){
-				dropDownMenu.style.display = 'block';
+				this.show();
 				dropDownMenu.innerHTML = generateHtmlList( results );
 			} else {
-				dropDownMenu.style.display = 'none';
+				this.hide();
 			}
 		};
 
@@ -216,6 +228,88 @@
 
 	};
 
+	var CommandManager = function( commands ){
+		var cachedStack = null;
+
+		function parseStatement( str ){
+			var stack = [];
+			cachedStack = [];
+			str.split( /\s+/ ).forEach(function( command ){
+				stack.push( command );
+				cachedStack.push( command );
+			});
+			return stack;
+		}
+
+		this.isValidStatement = function( statemet ){
+			// trim left and right
+			statemet = statemet.replace(/^\s*/,'').replace(/\s*$/,'');
+
+			var stack = parseStatement( statemet );
+			console.log( stack );
+			for ( var i in stack ){
+				if( !isExists( stack[i] ) ){
+					return false;
+				}
+			}
+			return true;
+		};
+
+		this.fuzzySearch = function( query ){
+			return grep( commands, function( _, obj ){
+				if( obj.name.toLowerCase().indexOf( query.toLowerCase() ) != -1 ){
+					return obj;
+				} else {
+					return null;
+				}
+			});
+		};
+
+		function isExists( commandName ){
+			for( var i in commands ) {
+				if( commands[i].name === commandName ) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		this.executeStatement = function() {
+			if( !!cachedStack ){
+				console.log( commands, cachedStack );
+				// TODO: in that place I realized, that the best way to ommit a lote of code is in using hash instead of array.
+				// But mb there is a problem in deleting fields in hashes.
+				for( var i in commands ){
+					if( commands[i].name === cachedStack[0] ){
+						console.log( commands[i] );
+						return commands[i].listener( cachedStack[1] );
+					}
+				}
+			}
+		};
+
+		this.addCommand = function( command ){
+			if( command instanceof Array ){
+				for( var i in command ){
+					commands.push( command[i] );
+				}
+			} else {
+				commands.push( command );
+			}
+		};
+
+		this.removeCommand = function( command ){
+			var commandName = command instanceof Object? command.name : command;
+			for( var i in commands ) {
+				if( commands[i].name === commandName ) {
+					commands.splice( i, 1 );
+					return;
+				}
+			}
+		};
+
+	};
+
 	/**
 	 * Console constructor-function
 	 *
@@ -226,6 +320,7 @@
 	scoupe.CommandBox = function( config, commands ){
 		var input = document.querySelector( config.inputSelector ),
 			inputManager = new InputManager( input ),
+			commandManager = new CommandManager( commands ),
 			// _ is the way to extend config in the same place
 			_ = config.dropDownMenuSelector = document.querySelector( config.dropDownMenuSelector ) ||
 			(function(){
@@ -245,16 +340,6 @@
 			})(),
 			dropDownMenu = new DropDownMenu( config );
 
-		function fuzzySearchInCommands( query ){
-			return grep( commands, function( _, obj ){
-				if( obj.name.toLowerCase().indexOf( query.toLowerCase() ) != -1 ){
-					return obj;
-				} else {
-					return null;
-				}
-			});
-		}
-
 		/**
 		 * Fired when input in focus
 		 * Draw dropDownMenu, when input has some keywords
@@ -262,7 +347,7 @@
 		input.addEventListener( 'focus', function(){
 			var query = inputManager.getWordUnderCursor();
 			if( query.length > 0 ) {
-				dropDownMenu.update( fuzzySearchInCommands( query ) );
+				dropDownMenu.update( commandManager.fuzzySearch( query ) );
 			}
 		});
 
@@ -271,7 +356,7 @@
 		 * Redraws dropDownMenu with fuzzy searhed list
 		 */
 		input.addEventListener( 'input', function(){
-			dropDownMenu.update( fuzzySearchInCommands( inputManager.getWordUnderCursor() ) );
+			dropDownMenu.update( commandManager.fuzzySearch( inputManager.getWordUnderCursor() ) );
 		});
 
 		/**
@@ -295,28 +380,25 @@
 				e.preventDefault();
 				dropDownMenu.selectNextItem();
 			} else if( e.keyIdentifier === 'Enter' ) {
-				inputManager.setWordUnderCursor( dropDownMenu.getSelectedItem() );
+				if( !dropDownMenu.isVisible() && commandManager.isValidStatement( input.value ) ){
+					var executeStatement = commandManager.executeStatement();
+					console.log( 'executeStatement',executeStatement );
+					if( executeStatement ){
+						input.value = '';
+					}
+				} else {
+					inputManager.setWordUnderCursor( dropDownMenu.getSelectedItem() );
+					dropDownMenu.hide();
+				}
 			}
 		});
 
 		this.addCommand = function( command ){
-			if( command instanceof Array ){
-				for( var i in command ){
-					commands.push( command[i] );
-				}
-			} else {
-				commands.push( command );
-			}
+			commandManager.addCommand( command );
 		};
 
 		this.removeCommand = function( command ){
-			var commandName = command instanceof Object? command.name : command;
-			for( var i in commands ) {
-				if( commands[i].name === commandName ) {
-					commands.splice( i, 1 );
-					return;
-				}
-			}
+			commandManager.removeCommand( command )
 		};
 	};
 

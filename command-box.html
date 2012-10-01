@@ -72,6 +72,7 @@
 				description: 'node name to add',
 				listener: function(){
 					console.log( 'add' );
+					return true;
 				}
 			},{
 				name: 'delete',
@@ -79,6 +80,7 @@
 				description: 'node name to delete',
 				listener: function(){
 					console.log( 'del' );
+					return true;
 				}
 			},{
 				name: 'search',
@@ -86,6 +88,7 @@
 				description: 'node name to search',
 				listener: function(){
 					console.log( 'search' );
+					return true;
 				}
 			}
 		]);
