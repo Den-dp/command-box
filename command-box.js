@@ -6,6 +6,7 @@
  */
 
 (function( scoupe ){
+	var DEBUG = true;
 
 	/**
 	 * Finds the elements of an array which satisfy a filter function.
@@ -41,7 +42,7 @@
 			cachedEnd = 0;
 
 		this.getWordBounds = function(){
-			console.group('getWordBounds()');
+			DEBUG&&console.group('getWordBounds()');
 			var cursorPosition = input.selectionStart,
 				text = input.value,
 				begin = 0,
@@ -66,39 +67,39 @@
 				if( cursorPosition - 1 >= 0 ) {
 					cursorPosition--;
 				} else {
-					console.log( 'I see the first character in the string has no yet typed (or probably it was deleted)' );
+					DEBUG&&console.log( 'I see the first character in the string has no yet typed (or probably it was deleted)' );
 				}
-			// if str became longer
-			// then we should catch the situation, when we insert spaces before word
-			// or not?…
+				// if str became longer
+				// then we should catch the situation, when we insert spaces before word
+				// or not?…
 			} else if( cursorPosition < input.value.length && text[cursorPosition+1] !== undefined && prevLength < input.value.length && text[cursorPosition] === ' ' ) {
 				cursorPosition++;
 			} else {
-				console.log( 'Default situation like typing characters' );
+				DEBUG&&console.log( 'Default situation like typing characters' );
 			}
 			prevLength = input.value.length;
 
 			// so, after preparations above we have 100% index of character under cursor
 			// and now we have to try to detect left and right 'bounds' of this character
 			// In best situation it would be the word otherwise it would be space character
-			console.log( ">> %d %d '%s' '%s'", input.selectionStart, cursorPosition, text[input.selectionStart], text[cursorPosition] );
+			DEBUG&&console.log( ">> %d %d '%s' '%s'", input.selectionStart, cursorPosition, text[input.selectionStart], text[cursorPosition] );
 
 			begin = end = cursorPosition;
 			for( var i = cursorPosition; i >= 0  && text[i] !== ' '; i-- ) {
 				begin = i;
 			}
-			console.group('last symbol loop');
+			DEBUG&&console.group('last symbol loop');
 			for( var j = cursorPosition; j < text.length && text[j] !== ' '; j++ ) {
 				end = j;
-				console.log( 'end :"%s"',text[end] );
+				DEBUG&&console.log( 'end :"%s"',text[end] );
 			}
 			if( text.length > end ) {
 				end++;
 			}
-			console.groupEnd();
+			DEBUG&&console.groupEnd();
 
-			console.log( '%d %d : "%s"', begin, end, text.slice( begin, end ) );
-			console.groupEnd();
+			DEBUG&&console.log( '%d %d : "%s"', begin, end, text.slice( begin, end ) );
+			DEBUG&&console.groupEnd();
 			return {
 				begin: cachedBegin = begin,
 				end: cachedEnd = end
@@ -118,12 +119,12 @@
 			} else {
 				res = '';
 			}
-			console.log( "'%s'",res );
+			DEBUG&&console.log( "'%s'",res );
 			return res;
 		};
 
 		this.getChachedWordBounds = function(){
-			console.log( 'from caaacchhheee:%d %d',cachedBegin, cachedEnd );
+			DEBUG&&console.log( 'from caaacchhheee:%d %d',cachedBegin, cachedEnd );
 			return {
 				begin: cachedBegin,
 				end: cachedEnd
@@ -246,11 +247,9 @@
 			statemet = statemet.replace(/^\s*/,'').replace(/\s*$/,'');
 
 			var stack = parseStatement( statemet );
-			console.log( stack );
-			for ( var i in stack ){
-				if( !isExists( stack[i] ) ){
-					return false;
-				}
+			DEBUG&&console.log( stack );
+			if( !isExists( stack[0] ) ){
+				return false;
 			}
 			return true;
 		};
@@ -276,13 +275,13 @@
 
 		this.executeStatement = function() {
 			if( !!cachedStack ){
-				console.log( commands, cachedStack );
+				DEBUG&&console.log( commands, cachedStack );
 				// TODO: in that place I realized, that the best way to ommit a lote of code is in using hash instead of array.
 				// But mb there is a problem in deleting fields in hashes.
 				for( var i in commands ){
 					if( commands[i].name === cachedStack[0] ){
-						console.log( commands[i] );
-						return commands[i].listener( cachedStack[1] );
+						DEBUG&&console.log( commands[i].listener, 'called with', cachedStack[1], cachedStack[2] );
+						return commands[i].listener( cachedStack[1], cachedStack[2] );
 					}
 				}
 			}
@@ -321,23 +320,23 @@
 		var input = document.querySelector( config.inputSelector ),
 			inputManager = new InputManager( input ),
 			commandManager = new CommandManager( commands ),
-			// _ is the way to extend config in the same place
+		// _ is the way to extend config in the same place
 			_ = config.dropDownMenuSelector = document.querySelector( config.dropDownMenuSelector ) ||
-			(function(){
-				var element = document.createElement( 'ul' ),
-				// . or #
-					selectorType = config.dropDownMenuSelector.charAt(0),
-				// part of string after . or #
-					selector = config.dropDownMenuSelector.substr(1);
+				(function(){
+					var element = document.createElement( 'ul' ),
+					// . or #
+						selectorType = config.dropDownMenuSelector.charAt(0),
+					// part of string after . or #
+						selector = config.dropDownMenuSelector.substr(1);
 
-				if( selectorType === '#' ) {
-					element.id = selector;
-				} else {
-					element.className = selector;
-				}
-				element.style.display = 'none';
-				return input.parentNode.insertBefore( element, input.nextSibling );
-			})(),
+					if( selectorType === '#' ) {
+						element.id = selector;
+					} else {
+						element.className = selector;
+					}
+					element.style.display = 'none';
+					return input.parentNode.insertBefore( element, input.nextSibling );
+				})(),
 			dropDownMenu = new DropDownMenu( config );
 
 		/**
@@ -382,7 +381,7 @@
 			} else if( e.keyIdentifier === 'Enter' ) {
 				if( !dropDownMenu.isVisible() && commandManager.isValidStatement( input.value ) ){
 					var executeStatement = commandManager.executeStatement();
-					console.log( 'executeStatement',executeStatement );
+					DEBUG&&console.log( 'executeStatement',executeStatement );
 					if( executeStatement ){
 						input.value = '';
 					}
